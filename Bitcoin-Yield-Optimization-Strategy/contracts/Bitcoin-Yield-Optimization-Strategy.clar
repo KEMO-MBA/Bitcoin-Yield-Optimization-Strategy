@@ -405,3 +405,51 @@
     (ok true)
   )
 )
+
+;; Governance Proposals
+(define-map governance-proposals
+  {
+    proposal-id: uint
+  }
+  {
+    proposer: principal,
+    description: (string-ascii 200),
+    vote-count: uint,
+    is-active: bool,
+    created-at: uint
+  }
+)
+
+(define-public (vote-on-proposal
+  (proposal-id uint)
+)
+  (begin
+    (let ((proposal (unwrap! 
+      (map-get? governance-proposals { proposal-id: proposal-id }) 
+      ERR-UNAUTHORIZED
+    )))
+      (asserts! (get is-active proposal) ERR-UNAUTHORIZED)
+      
+      ;; Increment vote count
+      (map-set governance-proposals 
+        { proposal-id: proposal-id }
+        (merge proposal 
+          { vote-count: (+ (get vote-count proposal) u1) }
+        )
+      )
+    )
+    (ok true)
+  )
+)
+
+;; Referral Program
+(define-map referrals
+  {
+    referrer: principal,
+    referee: principal
+  }
+  {
+    is-active: bool,
+    reward: uint
+  }
+)
